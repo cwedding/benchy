@@ -41,10 +41,10 @@ export default defineComponent({
       datasets: [{
         label: 'Risk Score',
         data: [
-          props.riskData.risk_categories?.stability?.length || 0,
-          props.riskData.risk_categories?.process?.length || 0,
-          props.riskData.risk_categories?.purity?.length || 0,
-          props.riskData.risk_categories?.developability?.length || 0
+          (props.riskData.risk_categories?.stability || []).reduce((sum, risk) => sum + parseFloat(risk.match(/\+(\d+\.\d+)/)?.[1] || '0'), 0),
+          (props.riskData.risk_categories?.process || []).reduce((sum, risk) => sum + parseFloat(risk.match(/\+(\d+\.\d+)/)?.[1] || '0'), 0),
+          (props.riskData.risk_categories?.purity || []).reduce((sum, risk) => sum + parseFloat(risk.match(/\+(\d+\.\d+)/)?.[1] || '0'), 0),
+          (props.riskData.risk_categories?.developability || []).reduce((sum, risk) => sum + parseFloat(risk.match(/\+(\d+\.\d+)/)?.[1] || '0'), 0)
         ],
         backgroundColor: [
           'rgba(255, 99, 132, 0.5)',
@@ -71,6 +71,15 @@ export default defineComponent({
         title: {
           display: true,
           text: 'Risk Assessment Categories'
+        },
+        tooltip: {
+          callbacks: {
+            afterLabel: function(context: any) {
+              const category = ['stability', 'process', 'purity', 'developability'][context.dataIndex];
+              const risks = props.riskData.risk_categories?.[category] || [];
+              return risks.map((risk: string) => '• ' + risk.split(':')[0]);
+            }
+          }
         }
       },
       scales: {
